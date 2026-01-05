@@ -1,4 +1,48 @@
-# FuelPHP
+# FuelPHP DDD Sample
+
+FuelPHP 1.8.2 をベースにしたドメイン駆動設計（DDD）のサンプル実装です。
+
+## アーキテクチャ
+
+### コンポーネント図
+
+![Component Diagram](public/assets/img/Component.png)
+
+### レイヤー構成
+
+| レイヤー | 役割 | 主要コンポーネント |
+|----------|------|-------------------|
+| **Presentation** | ユーザーインターフェース | Controller_Todo, Views |
+| **Application** | ユースケースの実行 | TodoUseCase, TodoDTO |
+| **Domain** | ビジネスロジック | Entity, ValueObject, Service, Factory |
+| **Infrastructure** | 技術的な実装 | TodoRepository, Model_Todo (ORM) |
+
+### 依存関係のルール
+
+- 上位レイヤーは下位レイヤーに依存する（Presentation → Application → Domain）
+- Infrastructure は Domain のインターフェースを実装する（Dependency Inversion）
+- Domain レイヤーは他のレイヤーに依存しない
+
+### ディレクトリ構成
+
+```
+fuel/app/classes/
+├── Controller/          # Presentation Layer
+├── UseCase/             # Application Layer
+├── DTO/                 # Application Layer
+├── Domain/              # Domain Layer
+│   ├── Entity/
+│   ├── ValueObject/
+│   ├── Service/
+│   ├── Factory/
+│   └── Repository/      # Interface only
+├── Repository/          # Infrastructure Layer
+└── Model/               # Infrastructure Layer (ORM)
+```
+
+---
+
+## FuelPHP
 
 * Version: 1.8.2
 * [Website](https://fuelphp.com/)
