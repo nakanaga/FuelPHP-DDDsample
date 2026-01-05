@@ -110,21 +110,20 @@ class TodoDomainService
     /**
      * 全ての未完了Todoを完了にする
      *
-     * @return int 完了にしたTodo数
+     * @return Todo[] 完了にしたTodoの配列
      */
-    public function completeAll(): int
+    public function completeAll(): array
     {
         $allTodos = $this->repository->findAll();
-        $completedCount = 0;
+        $completedTodos = [];
 
         foreach ($allTodos as $todo) {
             if ($todo->getStatus()->isPending()) {
                 $todo->complete();
-                $this->repository->save($todo);
-                $completedCount++;
+                $completedTodos[] = $todo;
             }
         }
 
-        return $completedCount;
+        return $completedTodos;
     }
 }

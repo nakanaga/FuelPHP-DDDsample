@@ -50,19 +50,28 @@ class TodoUseCase
      */
     public function create(string $title): TodoDTO
     {
-        if ($this->domainService->hasReachedDailyLimit()) {
-            throw new \DomainException('1日の作成上限に達しました');
+        \DB::start_transaction();
+
+        try {
+            if ($this->domainService->hasReachedDailyLimit()) {
+                throw new \DomainException('1日の作成上限に達しました');
+            }
+
+            $todo = $this->factory->createNew($title);
+
+            if ($this->domainService->isDuplicate($todo)) {
+                throw new \DomainException('同じタイトルのTodoが既に存在します');
+            }
+
+            $this->repository->save($todo);
+
+            \DB::commit_transaction();
+
+            return TodoDTO::fromEntity($todo);
+        } catch (\Exception $e) {
+            \DB::rollback_transaction();
+            throw $e;
         }
-
-        $todo = $this->factory->createNew($title);
-
-        if ($this->domainService->isDuplicate($todo)) {
-            throw new \DomainException('同じタイトルのTodoが既に存在します');
-        }
-
-        $this->repository->save($todo);
-
-        return TodoDTO::fromEntity($todo);
     }
 
     /**
@@ -89,17 +98,26 @@ class TodoUseCase
      */
     public function complete(int $id): TodoDTO
     {
-        $todoId = new TodoId($id);
-        $todo = $this->repository->findById($todoId);
+        \DB::start_transaction();
 
-        if ($todo === null) {
-            throw new \DomainException('Todo not found');
+        try {
+            $todoId = new TodoId($id);
+            $todo = $this->repository->findById($todoId);
+
+            if ($todo === null) {
+                throw new \DomainException('Todo not found');
+            }
+
+            $todo->complete();
+            $this->repository->save($todo);
+
+            \DB::commit_transaction();
+
+            return TodoDTO::fromEntity($todo);
+        } catch (\Exception $e) {
+            \DB::rollback_transaction();
+            throw $e;
         }
-
-        $todo->complete();
-        $this->repository->save($todo);
-
-        return TodoDTO::fromEntity($todo);
     }
 
     /**
