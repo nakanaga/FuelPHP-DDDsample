@@ -3,10 +3,9 @@
 namespace Repository;
 
 use Domain\Entity\Todo;
+use Domain\Factory\TodoFactory;
 use Domain\Repository\TodoRepositoryInterface;
 use Domain\ValueObject\TodoId;
-use Domain\ValueObject\TodoTitle;
-use Domain\ValueObject\TodoStatus;
 
 /**
  * Todoリポジトリ実装
@@ -15,6 +14,14 @@ use Domain\ValueObject\TodoStatus;
  */
 class TodoRepository implements TodoRepositoryInterface
 {
+    /** @var TodoFactory */
+    private TodoFactory $factory;
+
+    public function __construct()
+    {
+        $this->factory = new TodoFactory();
+    }
+
     /**
      * IDでTodoを検索する
      *
@@ -95,19 +102,19 @@ class TodoRepository implements TodoRepositoryInterface
     }
 
     /**
-     * ORMモデルからエンティティに変換する
+     * ORMモデルからエンティティに変換する（ファクトリを使用）
      *
      * @param \Model_Todo $model ORMモデル
      * @return Todo
      */
     private function toEntity(\Model_Todo $model): Todo
     {
-        return new Todo(
-            new TodoId((int)$model->id),
-            new TodoTitle($model->title),
-            TodoStatus::fromString($model->status),
-            new \DateTimeImmutable($model->created_at),
-            $model->completed_at ? new \DateTimeImmutable($model->completed_at) : null
+        return $this->factory->reconstruct(
+            (int)$model->id,
+            $model->title,
+            $model->status,
+            $model->created_at,
+            $model->completed_at
         );
     }
 }

@@ -1,5 +1,6 @@
 <?php
 
+use Domain\Factory\TodoFactory;
 use Domain\Service\TodoDomainService;
 use Repository\TodoRepository;
 use UseCase\TodoUseCase;
@@ -24,7 +25,8 @@ class Controller_Todo extends Controller
         parent::before();
         $repository = new TodoRepository();
         $domainService = new TodoDomainService($repository);
-        $this->todoUseCase = new TodoUseCase($repository, $domainService);
+        $factory = new TodoFactory();
+        $this->todoUseCase = new TodoUseCase($repository, $domainService, $factory);
     }
 
     /**

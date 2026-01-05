@@ -3,10 +3,10 @@
 namespace UseCase;
 
 use Domain\Entity\Todo;
+use Domain\Factory\TodoFactory;
 use Domain\Repository\TodoRepositoryInterface;
 use Domain\Service\TodoDomainService;
 use Domain\ValueObject\TodoId;
-use Domain\ValueObject\TodoTitle;
 use DTO\TodoDTO;
 
 /**
@@ -22,16 +22,22 @@ class TodoUseCase
     /** @var TodoDomainService */
     private TodoDomainService $domainService;
 
+    /** @var TodoFactory */
+    private TodoFactory $factory;
+
     /**
      * @param TodoRepositoryInterface $repository Todoリポジトリ
      * @param TodoDomainService $domainService Todoドメインサービス
+     * @param TodoFactory $factory Todoファクトリ
      */
     public function __construct(
         TodoRepositoryInterface $repository,
-        TodoDomainService $domainService
+        TodoDomainService $domainService,
+        TodoFactory $factory
     ) {
         $this->repository = $repository;
         $this->domainService = $domainService;
+        $this->factory = $factory;
     }
 
     /**
@@ -48,9 +54,7 @@ class TodoUseCase
             throw new \DomainException('1日の作成上限に達しました');
         }
 
-        $todo = Todo::create(
-            new TodoTitle($title)
-        );
+        $todo = $this->factory->createNew($title);
 
         if ($this->domainService->isDuplicate($todo)) {
             throw new \DomainException('同じタイトルのTodoが既に存在します');
